@@ -1642,11 +1642,13 @@ void OH750BWR::initialize() {
   // use defaults for white border and ESPHome image polarity
 
   // Resolution setting
-  this->command(0x65);
-  this->data(0x00);
-  this->data(0x00);  // 800*480
-  this->data(0x00);
-  this->data(0x00);
+  this->command(0x61); //tres
+  auto WIDTH=800;
+  auto HEIGHT=480;
+  this->data (WIDTH / 256); //source 800
+  this->data (WIDTH % 256);
+  this->data (HEIGHT / 256); //gate 480
+  this->data (HEIGHT % 256);
 
   // EPD hardware init end
 }
