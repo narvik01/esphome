@@ -1624,19 +1624,8 @@ void OH750BWR::initialize() {
   this->wait_until_idle_();
 
   // Not sure what this does but it's in the Adafruit EPD library
-  this->command(0xFF);
-  this->wait_until_idle_();
-
-  // COMMAND PANEL SETTING
-  this->command(0x00);
-  // 128x296 resolution:        10
-  // LUT from OTP:              0
-  // B/W/R mode                 0
-  // scan-up:                   1
-  // shift-right:               1
-  // booster ON:                1
-  // no soft reset:             1
-  this->data(0b10001111);
+  // this->command(0xFF);
+  // this->wait_until_idle_();
 
   // COMMAND VCOM AND DATA INTERVAL SETTING
   // use defaults for white border and ESPHome image polarity
@@ -1649,6 +1638,14 @@ void OH750BWR::initialize() {
   this->data (WIDTH % 256);
   this->data (HEIGHT / 256); //gate 480
   this->data (HEIGHT % 256);
+
+  this->command(0x15);
+  this->data(0x00);
+  this->command(0x50); //VCOM AND DATA INTERVAL SETTING
+  this->data(0x11);
+  this->data(0x07);
+  this->command(0x60); //TCON SETTING
+  this->data(0x22);
 
   // EPD hardware init end
 }
