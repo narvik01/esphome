@@ -1600,17 +1600,18 @@ void GDEY029T94::dump_config() {
 // ========================================================
 
 void OH750BWR::initialize() {
-  // from https://www.waveshare.com/w/upload/b/bb/2.9inch-e-paper-b-specification.pdf, page 37
+  // https://www.good-display.com/public/html/pdfjs/viewer/viewernew.html?file=https://v4.cecdn.yun300.cn/100001_1909185148/GDEY075Z08.pdf
   // EPD hardware init start
   this->reset_();
 
-  // COMMAND POWER SETTINGS
-  this->command(0x00);
-  this->data(0x03);
-  this->data(0x00);
-  this->data(0x2b);
-  this->data(0x2b);
-  this->data(0x03); /* for b/w */
+  this->command(0x00); //PANEL SETTING
+  this->data(0x0f); //KW: 3f, KWR: 2F, BWROTP: 0f, BWOTP: 1f
+
+  this->command(0x01); // POWER SETTING
+  this->data (0x07);
+  this->data (0x07); // VGH=20V,VGL=-20V
+  this->data (0x3f); // VDH=15V
+  this->data (0x3f); // VDL=-15V
 
   // COMMAND BOOSTER SOFT START
   this->command(0x06);
