@@ -1591,6 +1591,105 @@ void GDEY029T94::dump_config() {
   LOG_UPDATE_INTERVAL(this);
 }
 
+
+// ========================================================
+//     OH750BWR
+// Datasheet:
+//  - https://v4.cecdn.yun300.cn/100001_1909185148/SSD1680.pdf
+//  - https://github.com/adafruit/Adafruit_EPD/blob/master/src/panels/ThinkInk_290_Grayscale4_T5.h
+// ========================================================
+
+void OH750BWR::initialize() {
+  // from https://www.waveshare.com/w/upload/b/bb/2.9inch-e-paper-b-specification.pdf, page 37
+  // EPD hardware init start
+  this->reset_();
+
+  // COMMAND POWER SETTINGS
+  this->command(0x00);
+  this->data(0x03);
+  this->data(0x00);
+  this->data(0x2b);
+  this->data(0x2b);
+  this->data(0x03); /* for b/w */
+
+  // COMMAND BOOSTER SOFT START
+  this->command(0x06);
+  this->data(0x17);
+  this->data(0x17);
+  this->data(0x17);
+
+  // COMMAND POWER ON
+  this->command(0x04);
+  this->wait_until_idle_();
+
+  // Not sure what this does but it's in the Adafruit EPD library
+  this->command(0xFF);
+  this->wait_until_idle_();
+
+  // COMMAND PANEL SETTING
+  this->command(0x00);
+  // 128x296 resolution:        10
+  // LUT from OTP:              0
+  // B/W/R mode                 0
+  // scan-up:                   1
+  // shift-right:               1
+  // booster ON:                1
+  // no soft reset:             1
+  this->data(0b10001111);
+
+  // COMMAND VCOM AND DATA INTERVAL SETTING
+  // use defaults for white border and ESPHome image polarity
+
+  // Resolution setting
+  this->command(0x65);
+  this->data(0x00);
+  this->data(0x00);  // 800*480
+  this->data(0x00);
+  this->data(0x00);
+
+  // EPD hardware init end
+}
+void HOT OH750BWR::display() {
+  // COMMAND DATA START TRANSMISSION 2 (B/W only)
+  this->command(0x10);
+  delay(2);
+  this->start_data_();
+  for (size_t i = 0; i < this->get_buffer_length_(); i++) {
+    this->write_byte(this->buffer_[i]);
+  }
+  this->end_data_();
+  delay(2);
+
+    // COMMAND DATA START TRANSMISSION 2 (RED data)
+  this->command(0x13);
+  delay(2);
+  this->start_data_();
+  for (size_t i = 0; i < this->get_buffer_length_(); i++)
+    this->write_byte(0x00);
+  this->end_data_();
+  delay(2);
+
+  // COMMAND DISPLAY REFRESH
+  this->command(0x12);
+  delay(2);
+  this->wait_until_idle_();
+
+  // COMMAND POWER OFF
+  // NOTE: power off < deep sleep
+  this->command(0x02);
+}
+int OH750BWR::get_width_internal() { return 480; }
+int OH750BWR::get_height_internal() { return 800; }
+void OH750BWR::dump_config() {
+  LOG_DISPLAY("", "Waveshare E-Paper (Good Display)", this);
+  ESP_LOGCONFIG(TAG, "  Model: OH750BWR");
+  LOG_PIN("  Reset Pin: ", this->reset_pin_);
+  LOG_PIN("  DC Pin: ", this->dc_pin_);
+  LOG_PIN("  Busy Pin: ", this->busy_pin_);
+  LOG_UPDATE_INTERVAL(this);
+}
+
+
 // ========================================================
 //     Good Display 1.54in black/white/grey GDEW0154M09
 // As used in M5Stack Core Ink
